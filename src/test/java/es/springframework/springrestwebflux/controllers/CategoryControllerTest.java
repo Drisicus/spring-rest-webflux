@@ -30,7 +30,7 @@ class CategoryControllerTest {
                         Category.builder().description("Cat2").build()));
 
         webTestClient.get()
-                .uri("/api/v1/categories/")
+                .uri(CategoryController.BASE_URL)
                 .exchange()
                 .expectBodyList(Category.class)
                 .hasSize(2);
@@ -42,7 +42,7 @@ class CategoryControllerTest {
                 .willReturn(Mono.just(Category.builder().description("Cat").build()));
 
         webTestClient.get()
-                .uri("/api/v1/categories/someid")
+                .uri(CategoryController.BASE_URL + "/someid")
                 .exchange()
                 .expectBody(Category.class);
     }
