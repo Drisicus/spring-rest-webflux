@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @RestController
 public class CategoryController {
     public static final String BASE_URL = "/api/v1/categories";
@@ -39,6 +41,14 @@ public class CategoryController {
         return categoryRepository.findById(id).flatMap(foundCategory -> {
             category.setId(foundCategory.getId());
             return categoryRepository.save(category);
+        }).switchIfEmpty(Mono.error(new Exception("Category Not Found")));
+    }
+
+    @PatchMapping(BASE_URL + "/{id}")
+    Mono<Category> patchCategory(@PathVariable String id, @RequestBody Category category) {
+        return categoryRepository.findById(id).flatMap(foundCategory -> {
+            Optional.ofNullable(category.getDescription()).ifPresent(foundCategory::setDescription);
+            return categoryRepository.save(foundCategory);
         }).switchIfEmpty(Mono.error(new Exception("Category Not Found")));
     }
 
