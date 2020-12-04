@@ -2,9 +2,9 @@ package es.springframework.springrestwebflux.controllers;
 
 import es.springframework.springrestwebflux.domain.Vendor;
 import es.springframework.springrestwebflux.repositories.VendorRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.reactivestreams.Publisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -27,6 +27,20 @@ public class VendorController {
     @GetMapping(BASE_URL + "/{id}")
     Mono<Vendor> getVendorById(@PathVariable String id){
         return vendorRepository.findById(id);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(BASE_URL)
+    Mono<Void> createVendor(@RequestBody Publisher<Vendor> vendorStream){
+        return vendorRepository.saveAll(vendorStream).then();
+    }
+
+    @PutMapping(BASE_URL + "/{id}")
+    Mono<Vendor> updateVendor(@PathVariable String id, @RequestBody Vendor vendor){
+        return vendorRepository.findById(id).flatMap(vendorFound -> {
+            vendor.setId(vendorFound.getId());
+            return vendorRepository.save(vendor);
+        }).switchIfEmpty(Mono.error(new Exception("Vendor not found")));
     }
 
 }
